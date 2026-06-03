@@ -43,7 +43,7 @@ INSERT INTO tiquete (usuario_id, monto, estado) VALUES
 
 /* Consultas requeridas */
 
-/* 2.2 Top 3 usuarios con mayor monto total apostado en tiquetes GANADORES */
+/* 2.2 Top 3 usuarios con mayor monto total apostado en tiquetes ganadores
 
 SELECT u.nombre, SUM(t.monto) AS total
 FROM usuarios u
@@ -53,9 +53,9 @@ GROUP BY u.id_usuario, u.nombre
 ORDER BY total DESC
 LIMIT 3;
 
-/* 2.3 Lista de usuarios sin ningún tiquete registrado  */
+2.3 Lista de usuarios sin ningún tiquete registrado 
 
 SELECT DISTINCT u.id_usuario, u.nombre 
 FROM usuarios u
 LEFT JOIN tiquete t ON t.usuario_id = u.id_usuario
-WHERE t.usuario_id IS NULL;
+WHERE t.usuario_id IS NULL; */
