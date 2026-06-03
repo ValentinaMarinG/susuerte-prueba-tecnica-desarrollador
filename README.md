@@ -220,7 +220,8 @@ LEFT JOIN tiquete t ON t.usuario_id = u.id_usuario
 WHERE t.usuario_id IS NULL;
 ```
 
-###**2.4** ¿Por qué una transacción al descontar del saldo del usuario?  
+**2.4** ¿Por qué una transacción al descontar del saldo del usuario?  
+
 Restar el saldo y crear el tiquete son dos operaciones separadas que se ejecutan sobre diferentes tablas a la vez. 
 Si una de ellas se completa exitosamente y la otra falla por cualquier motivo, la información quedaría en un estado inconsistente. Por ejemplo, el usuario podría ver descontado su saldo sin que el tiquete haya sido registrado, o podría existir un tiquete registrado sin que se haya realizado el descuento correspondiente. Por esta razón es necesario utilizar una transacción, garantizando que ambas operaciones se ejecuten o ninguna de ellas se aplica. De esta manera se preserva la integridad y consistencia de los datos, evitando afectar la operación y la lógica del negocio.
 ---
