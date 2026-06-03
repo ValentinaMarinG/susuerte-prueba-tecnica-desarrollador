@@ -9,7 +9,7 @@ creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY(id_usuario)
 );
 
-CREATE TABLE tiquetes(
+CREATE TABLE tiquete(
 id_tiquete INT AUTO_INCREMENT,
 usuario_id INT NOT NULL,
 monto DECIMAL(10,2),
@@ -29,7 +29,7 @@ INSERT INTO usuarios (nombre, saldo) VALUES
 ('Valentina Marin', 0.00);
 
 -- Tiquetes
-INSERT INTO tiquetes (usuario_id, monto, estado) VALUES
+INSERT INTO tiquete (usuario_id, monto, estado) VALUES
 (1, 100.00, 'ganador'),
 (1, 50.00, 'perdedor'),
 (2, 200.00, 'pendiente'),
@@ -47,7 +47,7 @@ INSERT INTO tiquetes (usuario_id, monto, estado) VALUES
 
 SELECT u.nombre, SUM(t.monto) AS total
 FROM usuarios u
-INNER JOIN tiquetes t ON t.usuario_id = u.id_usuario
+INNER JOIN tiquete t ON t.usuario_id = u.id_usuario
 WHERE t.estado = 'ganador'
 GROUP BY u.id_usuario, u.nombre
 ORDER BY total DESC

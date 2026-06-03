@@ -269,6 +269,27 @@
             document.getElementById('usuario_id').value = '';
             document.getElementById('monto').value = '';
         }
+
+        function agregarTiqueteAlDOM(tiquete) {
+            const lista = document.getElementById('lista-tiquetes');
+            const sinTiq = document.getElementById('sin-tiquetes');
+
+            sinTiq.style.display = 'none';
+
+            const creacion = new Date().toLocaleString('es-CO');
+            const li = document.createElement('li');
+            li.className = 'tiquete-item';
+            li.innerHTML = `
+                <div class="tiquete-info">
+                    <strong>#${tiquete.id}</strong> · Usuario ${tiquete.usuario_id}<br>
+                    <small>${creacion}</small>
+                </div>
+                <span class="tiquete-monto">$${tiquete.monto.toLocaleString('es-CO')}</span>
+                <span class="badge badge-${tiquete.estado}">${tiquete.estado}</span>
+                `;
+            lista.prepend(li);
+        }
+
     </script>
 
 </body>

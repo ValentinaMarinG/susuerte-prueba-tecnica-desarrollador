@@ -13,24 +13,26 @@ if ($method === 'POST') {
 
 function crearTiquete()
 {
-    $usuarioId = trim($_POST['usuario_id'] ?? null);
-    $monto = trim($_POST['monto'] ?? null);
+    $body = json_decode(file_get_contents('php://input'), true) ?? [];
+    $usuarioId = trim($body['usuario_id'] ?? '');
+    $monto = trim($body['monto'] ?? '');
 
     // Validación de campos completos
-    if ($usuarioId === null || $monto === null) {
+    if ($usuarioId === '' || $monto === '') {
         jsonResponse(['error' => 'Los campos usuario id y monto son obligatorios.'], 400);
-    }
-
-    if ((!is_float($monto) && !is_int($monto)) || $monto <= 0) {
-        jsonResponse(['error' => 'Monto debe ser un número positivo.'], 400);
     }
 
     $monto = (float) $monto;
 
+    /* if (!is_float($monto) || $monto <= 0) {
+        jsonResponse(['error' => 'Monto debe ser un número positivo.'], 400);
+    }
+ */
+    
     try {
         $pdo = getDB();
 
-        $stmt = $pdo->prepare('SELECT id, saldo FROM usuarios WHERE id = ? LIMIT 1');
+        $stmt = $pdo->prepare('SELECT id_usuario, saldo FROM usuarios WHERE id_usuario = ?');
         $stmt->execute([$usuarioId]);
         $usuario = $stmt->fetch();
 
@@ -53,18 +55,18 @@ function crearTiquete()
         try {
             // Descontar monto del saldo
             $lock = $pdo->prepare(
-                'SELECT saldo FROM usuarios WHERE id = ? FOR UPDATE'  // Bloquear fila
+                'SELECT saldo FROM usuarios WHERE id_usuario = ? FOR UPDATE'  // Bloquear fila
             );
             $lock->execute([$usuarioId]);
             $filaActual = $lock->fetch();
 
             $updateSaldo = $pdo->prepare(
-                'UPDATE usuarios SET saldo = saldo - ? WHERE id = ?'
+                'UPDATE usuarios SET saldo = saldo - ? WHERE id_usuario = ?'
             );
             $updateSaldo->execute([$monto, $usuarioId]);
 
             $insertTiquete = $pdo->prepare(
-                'INSERT INTO tiquetes (usuario_id, monto, estado) VALUES (?, ?, ?)'
+                'INSERT INTO tiquete (usuario_id, monto, estado) VALUES (?, ?, ?)'
             );
             $insertTiquete->execute([$usuarioId, $monto, 'pendiente']);
 
@@ -95,18 +97,18 @@ function crearTiquete()
 
 function listarTiquetesUsuario()
 {
-    $usuarioId = trim($_GET['usuario_id'] ?? null);
+    $usuarioId = trim($_GET['id'] ?? '');
 
-    if ($id === null || (int) $id <= 0) {
+    if ($usuarioId === '' || (int) $usuarioId <= 0) {
         jsonResponse(['error' => 'El parámetro id debe ser un entero positivo.'], 400);
     }
 
-    $usuarioId = (int) $id;
+    $usuarioId = (int) $usuarioId;
 
     try {
         $pdo = getDB();
 
-        $stmtUsuario = $pdo->prepare('SELECT id, nombre, saldo FROM usuarios WHERE id = ? LIMIT 1');
+        $stmtUsuario = $pdo->prepare('SELECT id_usuario, nombre, saldo FROM usuarios WHERE id_usuario = ?');
         $stmtUsuario->execute([$usuarioId]);
         $usuario = $stmtUsuario->fetch();
 
@@ -116,8 +118,8 @@ function listarTiquetesUsuario()
         }
 
         $stmtTiquetes = $pdo->prepare(
-            'SELECT id, monto, estado, creado_en
-         FROM tiquetes
+            'SELECT id_tiquete, monto, estado, creado_en
+         FROM tiquete
          WHERE usuario_id = ?
          ORDER BY creado_en DESC'
         );
@@ -127,7 +129,7 @@ function listarTiquetesUsuario()
         //Respuesta exitosa
         jsonResponse([
             'usuario' => [
-                'id' => (int) $usuario['id'],
+                'id' => (int) $usuario['id_usuario'],
                 'nombre' => $usuario['nombre'],
                 'saldo' => (float) $usuario['saldo'],
             ],
