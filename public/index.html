@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Susuerte</title>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: sans-serif;
+            background: #f0f4f8;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2vh;
+        }
+
+        header {
+            background: #093f8f;
+            color: #000;
+            width: 100%;
+            max-width: 600px;
+            border-radius: 10px 10px 0 0;
+            padding: 1.2rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .75rem;
+        }
+
+        .card {
+            background: #fff;
+            width: 100%;
+            max-width: 600px;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, .1);
+            padding: 1.8rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group {
+            margin-bottom: 1.1rem;
+        }
+
+        label {
+            display: block;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #030303;
+            margin-bottom: .35rem;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: .65rem .9rem;
+            border: 1.5px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color .2s;
+            border-color: #a3b2c7;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #000;
+        }
+
+        button {
+            width: 70%;
+            padding: .75rem;
+            background: #003087;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background .2s, opacity .2s;
+            align-self: center;
+        }
+
+        button:hover {
+            background: #f3dd12;
+        }
+
+        button:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+
+        #mensaje {
+            margin-top: 1rem;
+            padding: .85rem 1rem;
+            border-radius: 6px;
+            font-size: .9rem;
+            font-weight: 500;
+            display: none;
+        }
+
+        #mensaje.exito {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+            display: block;
+        }
+
+        #mensaje.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+            display: block;
+        }
+
+        #mensaje.aviso {
+            background: #fef9c3;
+            color: #92400e;
+            border: 1px solid #fde68a;
+            display: block;
+        }
+
+        /* Lista de tiquetes */
+        .seccion-lista {
+            margin-top: 2rem;
+        }
+
+        .seccion-lista h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #003087;
+            margin-bottom: .8rem;
+        }
+
+        #lista-tiquetes {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: .6rem;
+        }
+
+        .tiquete-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #003087;
+            border-radius: 6px;
+            padding: .7rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeIn .3s ease;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <img src="https://susuerte.com/wp-content/uploads/2021/05/logo.png">
+    </header>
+    <div class="card">
+        <div class="form-group">
+            <label for="usuario_id">ID de usuario</label>
+            <input type="number" id="usuario_id" placeholder="Ej: 1" min="1" />
+        </div>
+        <div class="form-group">
+            <label for="monto">Monto a apostar ($)</label>
+            <input type="number" id="monto" placeholder="Ej: $ 5000" min="0.01" />
+        </div>
+
+        <button id="btn-apostar" onclick="crearTiquete()">Registrar apuesta</button>
+
+        <div id="mensaje"></div>
+
+        <div class="seccion-lista">
+            <h2>Tiquetes registrados</h2>
+            <p id="sin-tiquetes">Aún no tiene apuestas registradas</p>
+            <ul id="lista-tiquetes"></ul>
+        </div>
+
+    </div>
+
+    <script>
+        const API_URL = '/api/tiquetes';
+
+        async function crearTiquete() {
+            const usuarioId = parseInt(document.getElementById('usuario_id').value, 10);
+            const monto = parseFloat(document.getElementById('monto').value);
+            const btn = document.getElementById('btn-apostar');
+
+            if (!usuarioId || usuarioId <= 0) {
+                mostrarMensaje('Ingresa un ID de usuario válido.', 'error');
+                return;
+            }
+            if (!monto || monto <= 0) {
+                mostrarMensaje('Ingresa un monto mayor a 0.', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Registrando…';
+            ocultarMensaje();
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario_id: usuarioId, monto }),
+                });
+
+                const data = await response.json();
+
+                switch (response.status) {
+                    case 201:
+                        mostrarMensaje(`Tiquete #${data.tiquete.id} creado!`, 'exito');
+                        agregarTiqueteAlDOM(data.tiquete);
+                        limpiarFormulario();
+                        break;
+
+                    case 400:
+                        mostrarMensaje(`Datos inválidos: ${data.error}`, 'error');
+                        break;
+
+                    case 404:
+                        mostrarMensaje(`Usuario no encontrado`, 'error');
+                        break;
+
+                    case 422:
+                        mostrarMensaje(
+                            `Saldo insuficiente. Disponible: $${data.saldo_disponible?.toLocaleString('es-CO') ?? '—'}`,
+                            'error'
+                        );
+                        break;
+
+                    case 500:
+                    default:
+                        mostrarMensaje(`Error del servidor. Intente más tarde.`, 'error');
+                }
+
+            } catch (err) {
+                mostrarMensaje('No se pudo conectar con el servidor. Revisa tu conexión.', 'error');
+                console.error(err);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Registrar apuesta';
+            }
+        }
+
+        function mostrarMensaje(texto, tipo) {
+            const el = document.getElementById('mensaje');
+            el.textContent = texto;
+            el.className = tipo;
+        }
+
+        function ocultarMensaje() {
+            const el = document.getElementById('mensaje');
+            el.className = '';
+            el.style.display = '';
+        }
+
+        function limpiarFormulario() {
+            document.getElementById('usuario_id').value = '';
+            document.getElementById('monto').value = '';
+        }
+    </script>
+
+</body>
+
+</html>
