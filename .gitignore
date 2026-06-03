@@ -1,0 +1,31 @@
+# Dependencias
+/vendor/
+/node_modules/
+
+# Variables de entorno y credenciales
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+/logs/
+
+# Caché y temporales
+/cache/
+*.cache
+*.tmp
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Composer
+composer.lock
+
+# PHP
+*.phar

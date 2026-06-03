@@ -57,5 +57,5 @@ LIMIT 3;
 
 SELECT DISTINCT u.id_usuario, u.nombre 
 FROM usuarios u
-LEFT JOIN tiquetes t ON t.usuario_id = u.id_usuario
+LEFT JOIN tiquete t ON t.usuario_id = u.id_usuario
 WHERE t.usuario_id IS NULL;
