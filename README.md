@@ -236,7 +236,7 @@ Si una de ellas se completa exitosamente y la otra falla por cualquier motivo, l
 
 **Implementación propuesta:**
 
-1. El cliente genera un UUID v4 en un dato del cliente por cada intento de apuesta y lo envía en el header.
+1. El cliente genera un UUID v4 por cada intento de apuesta y lo envía en el header.
 2. El servidor guarda en base de datos el par `(idempotency_key, tiquete_id, respuesta_json)` en una tabla `idempotency_keys` con un índice único sobre la clave.
 3. Si llega una request con una clave ya procesada, el servidor retorna la respuesta original almacenada sin ejecutar la transacción nuevamente.
 4. Las claves expiran tras una cierta cantidad de minutos/horas mediante un proceso de limpieza periódico.
